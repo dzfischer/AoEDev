@@ -31,6 +31,7 @@ public:
 	void sendDiploVote(int iVoteId, PlayerVoteTypes eChoice);
 	DllExport void sendChangeWar(TeamTypes eRivalTeam, bool bWar);
 	DllExport void sendPing(int iX, int iY);
+	void sendAddReminder(PlayerTypes ePlayer, int iGameTurn, CvWString szMessage);
 };
 
 

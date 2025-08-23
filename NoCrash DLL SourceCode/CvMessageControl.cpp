@@ -199,4 +199,8 @@ void CvMessageControl::sendPing(int iX, int iY)
 	}
 }
 
-
+// BUG - Reminder Mod
+void CvMessageControl::sendAddReminder(PlayerTypes ePlayer, int iGameTurn, CvWString szMessage)
+{
+	gDLL->sendMessageData(new CvNetAddReminder(ePlayer, iGameTurn, szMessage));
+}

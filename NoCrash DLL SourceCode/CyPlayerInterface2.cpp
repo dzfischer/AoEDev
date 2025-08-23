@@ -60,6 +60,7 @@ void CyPlayerPythonInterface2(python::class_<CyPlayer>& x)
 		.def("canSplitArea", &CyPlayer::canSplitArea, "bool (int)")
 		.def("canHaveTradeRoutesWith", &CyPlayer::canHaveTradeRoutesWith, "bool (int)")
 		.def("forcePeace", &CyPlayer::forcePeace, "void (int)")
+		.def("addReminder", &CyPlayer::addReminder, "void (int iGameTurn, string szMessage)")
 
 /*************************************************************************************************/
 /**	CivCounter						   		10/27/09    						Valkrionn		**/

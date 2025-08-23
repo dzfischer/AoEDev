@@ -2310,6 +2310,11 @@ void  CyPlayer::forcePeace(int iPlayer)
 		m_pPlayer->forcePeace((PlayerTypes)iPlayer);
 }
 
+void CyPlayer::addReminder(int iGameTurn, std::wstring szMessage) const
+{
+	m_pPlayer->addReminder(iGameTurn, CvWString(szMessage));
+}
+
 /*************************************************************************************************/
 /**	CivCounter						   		10/27/09    						Valkrionn		**/
 /**										Stores Spawn Information								**/

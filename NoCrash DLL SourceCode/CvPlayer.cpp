@@ -30603,3 +30603,10 @@ int CvPlayer::getClaimFortCost() const
 	iCost /= 400;
 	return iCost;
 }
+
+// BUG - Reminder Mod
+#include "CvMessageControl.h"
+void CvPlayer::addReminder(int iGameTurn, CvWString szMessage) const
+{
+	CvMessageControl::getInstance().sendAddReminder(getID(), iGameTurn, szMessage);
+}

@@ -557,6 +557,7 @@ public:
 
 	void forcePeace(int iPlayer);
 
+	void addReminder(int iGameTurn, std::wstring szMessage) const;
 /*************************************************************************************************/
 /**	New Tag Defs	(TraitInfos)			05/15/08								Xienwolf	**/
 /**	New Tag Defs	(PlayerInfos)			05/15/08											**/

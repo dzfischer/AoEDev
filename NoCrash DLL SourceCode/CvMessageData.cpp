@@ -61,6 +61,8 @@ CvMessageData* CvMessageData::createMessage(GameMessageTypes eType)
 		return new CvNetChangeWar();
 	case GAMEMESSAGE_PING:
 		return new CvNetPing();
+	case GAMEMESSAGE_ADD_REMINDER:
+		return new CvNetAddReminder();
 	default:
 		FAssertMsg(false, "Unknown message type");
 	}
@@ -1122,3 +1124,41 @@ void CvNetPing::Execute()
 	}
 }
 
+// BUG - Reminder Mod - start (Import from C2C Blaze 8/2025)
+#include "CyArgsList.h"
+#include "CvDLLPythonIFaceBase.h"
+CvNetAddReminder::CvNetAddReminder(PlayerTypes ePlayer, int iGameTurn, CvWString szMessage) : CvMessageData(GAMEMESSAGE_ADD_REMINDER), m_ePlayer(ePlayer), m_iGameTurn(iGameTurn), m_szMessage(szMessage)
+{
+}
+
+void CvNetAddReminder::Debug(char* szAddendum)
+{
+	sprintf(szAddendum, "Add Reminder, player %d on turn %d: %S", m_ePlayer, m_iGameTurn, m_szMessage.c_str());
+}
+
+void CvNetAddReminder::Execute()
+{
+	if (m_ePlayer == NO_PLAYER)
+		return;
+
+	CyArgsList argsList;
+	argsList.add(m_ePlayer);
+	argsList.add(m_iGameTurn);
+	argsList.add(m_szMessage.c_str());
+	gDLL->getPythonIFace()->callFunction(PYCivModule, "netAddReminder", argsList.makeFunctionArgs()); //, &lResult
+}
+
+void CvNetAddReminder::PutInBuffer(FDataStreamBase* pStream)
+{
+	pStream->Write(m_ePlayer);
+	pStream->Write(m_iGameTurn);
+	pStream->WriteString(m_szMessage);
+}
+
+void CvNetAddReminder::SetFromBuffer(FDataStreamBase* pStream)
+{
+	pStream->Read((int*)&m_ePlayer);
+	pStream->Read(&m_iGameTurn);
+	pStream->ReadString(m_szMessage);
+}
+// BUG - Reminder Mod - end
