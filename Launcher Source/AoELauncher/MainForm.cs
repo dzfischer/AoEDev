@@ -127,7 +127,7 @@ public class MainForm : Form
 
         // Row 1: preset save/load/delete, with the dev action right-aligned on the same line
         var btnSave = new FlatButton { Text = "Save Active Modules As New Preset", Left = 12, Top = 8, Width = 250, Height = Theme.ButtonHeight };
-        cmbPresets = new ComboBox { Left = 270, Top = 8, Width = 170, DropDownStyle = ComboBoxStyle.DropDownList };
+        cmbPresets = new ComboBox { Left = 270, Top = 11, Width = 170, DropDownStyle = ComboBoxStyle.DropDownList };
         var btnLoad = new FlatButton { Text = "Load Preset", Left = 448, Top = 8, Width = 110, Height = Theme.ButtonHeight };
         var btnDelete = new FlatButton { Text = "Delete", Left = 566, Top = 8, Width = 80, Height = Theme.ButtonHeight };
         var btnDevSchemas = new FlatButton { Text = "Dev: Update Schemas", Top = 8, Width = 170, Height = Theme.ButtonHeight };
@@ -140,12 +140,12 @@ public class MainForm : Form
 
         // Row 2: import (left) / export (right)
         var btnImport = new FlatButton { Text = "Import Preset", Left = 12, Top = 44, Width = 135, Height = Theme.ButtonHeight };
+        var btnExport = new FlatButton { Text = "Export Preset", Left = 155, Top = 44, Width = 135, Height = Theme.ButtonHeight };
         chkFutureproof = new CheckBox
         {
             Text = "Futureproof (omit version, skip change checks)",
-            Left = 155, Top = 48, Width = 340,
+            Left = 298, Top = 48, Width = 340,
         };
-        var btnExport = new FlatButton { Text = "Export Preset", Left = 503, Top = 44, Width = 135, Height = Theme.ButtonHeight };
         Theme.StyleButton(btnImport);
         Theme.StyleCheckBox(chkFutureproof);
         Theme.StyleButton(btnExport);
@@ -168,7 +168,7 @@ public class MainForm : Form
             Height = 26,
             TextAlign = ContentAlignment.MiddleLeft,
             Padding = new Padding(10, 0, 0, 0),
-            Text = "Drag modules between the two lists, or drag a module folder in from Explorer to install it.",
+            Text = "",
         };
         Theme.StyleLabel(lblStatus, muted: true);
         lblStatus.BackColor = Theme.Panel;
@@ -218,8 +218,8 @@ public class MainForm : Form
         var infoCol = new DataGridViewButtonColumn
         {
             Name = "Info",
-            HeaderText = "",
-            Text = "?",
+            HeaderText = "Info",
+            Text = "i",
             UseColumnTextForButtonValue = true,
             AutoSizeMode = DataGridViewAutoSizeColumnMode.None,
             Width = 32,
@@ -251,7 +251,7 @@ public class MainForm : Form
             _btsExePath = placement.BtsExePath;
         }
 
-        RefreshModules();
+        RefreshModules(true);
         RefreshPresetCombo();
     }
 
@@ -355,7 +355,7 @@ public class MainForm : Form
 
     // ------------------------------------------------------------ Modules ---
 
-    private void RefreshModules()
+    private void RefreshModules(bool firstLaunch = false)
     {
         Cursor = Cursors.WaitCursor;
         lblStatus.Text = "Scanning modules...";
@@ -372,7 +372,11 @@ public class MainForm : Form
         PopulateGrid(dgvActive, _activeModules, activeSelected, activeScroll);
         PopulateGrid(dgvInactive, _inactiveModules, inactiveSelected, inactiveScroll);
 
-        lblStatus.Text = $"{_activeModules.Count} active, {_inactiveModules.Count} inactive modules.";
+        if (firstLaunch)
+            lblStatus.Text = $"Drag modules between the two lists, or drag a module folder in from Explorer to install it.";
+        else
+            lblStatus.Text = $"{_activeModules.Count} active, {_inactiveModules.Count} inactive modules.";
+
         Cursor = Cursors.Default;
     }
 
