@@ -9,16 +9,12 @@
     <AssemblyName>AoELauncher</AssemblyName>
     <RootNamespace>AoELauncher</RootNamespace>
     <InvariantGlobalization>true</InvariantGlobalization>
-    <ApplicationIcon></ApplicationIcon>
-
-    <!-- Publish settings: produces one self-contained .exe with no separate
-         .NET runtime install required on the user's machine. See README for
-         the publish command. -->
+    <ApplicationIcon>AoE.ico</ApplicationIcon>
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <PublishSingleFile>true</PublishSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <EnableCompressionInSingleFile>false</EnableCompressionInSingleFile>
   </PropertyGroup>
 
 </Project>
