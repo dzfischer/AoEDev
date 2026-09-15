@@ -130,13 +130,13 @@ public class MainForm : Form
         cmbPresets = new ComboBox { Left = 270, Top = 11, Width = 170, DropDownStyle = ComboBoxStyle.DropDownList };
         var btnLoad = new FlatButton { Text = "Load Preset", Left = 448, Top = 8, Width = 110, Height = Theme.ButtonHeight };
         var btnDelete = new FlatButton { Text = "Delete", Left = 566, Top = 8, Width = 80, Height = Theme.ButtonHeight };
-        var btnDevSchemas = new FlatButton { Text = "Dev: Update Schemas", Top = 8, Width = 170, Height = Theme.ButtonHeight };
+        var btnHelp = new FlatButton { Text = "Instructions", Top = 8, Width = 130, Height = Theme.ButtonHeight };
         Theme.StyleButton(btnSave);
         Theme.StyleComboBox(cmbPresets);
         Theme.StyleButton(btnLoad);
         Theme.StyleButton(btnDelete);
-        Theme.StyleButton(btnDevSchemas);
-        btnDevSchemas.Click += (s, e) => UpdateSchemas();
+        Theme.StyleButton(btnHelp);
+        btnHelp.Click += (s, e) => ShowHelp();
 
         // Row 2: import (left) / export (right)
         var btnImport = new FlatButton { Text = "Import Preset", Left = 12, Top = 44, Width = 135, Height = Theme.ButtonHeight };
@@ -146,9 +146,12 @@ public class MainForm : Form
             Text = "Futureproof (omit version, skip change checks)",
             Left = 298, Top = 48, Width = 340,
         };
+        var btnDevSchemas = new FlatButton { Text = "Dev: Update Schemas", Top = 44, Width = 170, Height = Theme.ButtonHeight };
         Theme.StyleButton(btnImport);
         Theme.StyleCheckBox(chkFutureproof);
         Theme.StyleButton(btnExport);
+        Theme.StyleButton(btnDevSchemas);
+        btnDevSchemas.Click += (s, e) => UpdateSchemas();
 
         btnSave.Click += (s, e) => SavePreset();
         btnLoad.Click += (s, e) => LoadPreset();
@@ -158,8 +161,9 @@ public class MainForm : Form
 
         bottomPanel.Controls.AddRange(new Control[]
         {
-            btnSave, cmbPresets, btnLoad, btnDelete, btnDevSchemas, btnImport, chkFutureproof, btnExport
+            btnSave, cmbPresets, btnLoad, btnDelete, btnHelp, btnImport, btnExport, chkFutureproof, btnDevSchemas
         });
+        bottomPanel.Resize += (s, e) => { btnHelp.Left = bottomPanel.Width - btnHelp.Width - 12; };
         bottomPanel.Resize += (s, e) => { btnDevSchemas.Left = bottomPanel.Width - btnDevSchemas.Width - 12; };
 
         lblStatus = new Label
@@ -207,6 +211,7 @@ public class MainForm : Form
         {
             Name = "Name", HeaderText = "Module",
             AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
+            Resizable = DataGridViewTriState.False,
         };
         var versionCol = new DataGridViewTextBoxColumn
         {
@@ -428,6 +433,36 @@ public class MainForm : Form
             : (!string.IsNullOrWhiteSpace(m.ShortDesc) ? m.ShortDesc : "(no description provided)"));
 
         ShowScrollableMessage(m.Name, text.ToString());
+    }
+    private void ShowHelp()
+    {
+        var msg = new StringBuilder();
+        msg.AppendLine("    GENERAL");
+        msg.AppendLine("- You can launch the game by the top center button; be aware it may take some time to activate");
+        msg.AppendLine("- Active modules are shown on the left panel, and inactive modules on the right panel");
+        msg.AppendLine();
+        msg.AppendLine("    USING MODULES");
+        msg.AppendLine("- Changing the status of a module simply makes this launcher move the game files for you; it can be done manually");
+        msg.AppendLine("- You can either doubleclick a module to move which side it is on, or click and drag it across");
+        msg.AppendLine("- Shift clicking a module with one already selected will select it and all modules between the two");
+        msg.AppendLine("- Control-clicking a module will toggle the selection of that specific module");
+        msg.AppendLine("- The Refresh button will update the shown module list if you manually move files with the launcher open");
+        msg.AppendLine(); 
+        msg.AppendLine("    PRESETS");
+        msg.AppendLine("- Pressing the \"Save...\" button will give you the option to save the current selection as a preset");
+        msg.AppendLine("- Pressing the Load Preset button will cause the currently selected preset in the dropdown box to be loaded");
+        msg.AppendLine("- Delete will prompt you whether to delete the currently selected preset");
+        msg.AppendLine(); 
+        msg.AppendLine("    EXPORTING AND IMPORTING");
+        msg.AppendLine("- Presets can be exported or imported, which is VERY USEFUL when you are reporting bugs on discord");
+        msg.AppendLine("- The Import Preset button will prompt you to paste a preset code, and then save and load it");
+        msg.AppendLine("- Export Preset will copy a code to your clipboard that you can use to send to others");
+        msg.AppendLine("- If the Futureproof box is checked, the copied code will not be checked upon import for matching module versions");
+        msg.AppendLine(); 
+        msg.AppendLine("    UPDATING SCHEMAS (For module makers)");
+        msg.AppendLine("- This button will attempt to *update*, not add, schema files for all modules. Please format your module correctly!");
+
+        ShowScrollableMessage("Usage Guide", msg.ToString());
     }
 
     /// <summary>Generic scrollable read-only message dialog, styled to match the app, with a single OK button.</summary>
