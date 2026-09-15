@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
 using AoELauncher.Core;
@@ -40,7 +41,7 @@ public class MainForm : Form
         MinimumSize = new Size(880, 520);
 
         Theme.StyleForm(this);
-        LoadBackgroundImage();
+        //LoadBackgroundImage(); // BLAZE disabled; seems winforms can't have alpha layers in foreground elements we need
 
         BuildUi();
         SetupDragDrop();
@@ -48,25 +49,25 @@ public class MainForm : Form
         Load += MainForm_Load;
     }
 
+    /*
     private void LoadBackgroundImage()
     {
         try
         {
-            var bgPath = Path.Combine(_modPath, "UI", "Background", "background.png");
-            if (!File.Exists(bgPath)) return;
+            var asm = Assembly.GetExecutingAssembly();
+            using var stream = asm.GetManifestResourceStream("AoELauncher.UI.Background.background.png");
+            if (stream == null) return;
 
-            var bytes = File.ReadAllBytes(bgPath);
-            using var ms = new MemoryStream(bytes);
-            using var loaded = Image.FromStream(ms);
+            using var loaded = Image.FromStream(stream);
             BackgroundImage = new Bitmap(loaded); // detach from the stream so it's safe to dispose
             BackgroundImageLayout = ImageLayout.None; // pinned top-left, unscaled, clipped/revealed as the window resizes
-            Padding = new Padding(10);
         }
         catch
         {
             // Malformed or unreadable background image: just skip it, not worth failing startup over.
         }
     }
+    */
 
     // ---------------------------------------------------------------- UI ---
 
