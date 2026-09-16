@@ -48,10 +48,11 @@ public static class SchemaUpdater
             foreach (var file in Directory.EnumerateFiles(moduleXmlDir, "*Schema.xml", SearchOption.AllDirectories))
             {
                 var fileName = Path.GetFileName(file);
-                var relDir = Path.GetDirectoryName(Path.GetRelativePath(moduleXmlDir, file)) ?? "";
+                var relDir = Path.GetDirectoryName(CompatHelpers.GetRelativePath(moduleXmlDir, file)) ?? "";
 
                 var underscoreIdx = fileName.LastIndexOf('_');
-                var parentFileName = underscoreIdx >= 0 ? fileName[(underscoreIdx + 1)..] : fileName;
+                // No System.Range on .NET Framework -- fileName[(underscoreIdx + 1)..] won't compile there.
+                var parentFileName = underscoreIdx >= 0 ? fileName.Substring(underscoreIdx + 1) : fileName;
 
                 var sourcePath = string.IsNullOrEmpty(relDir)
                     ? Path.Combine(baseXmlDir, parentFileName)
@@ -61,7 +62,7 @@ public static class SchemaUpdater
                 {
                     report.Errors.Add(
                         $"{fileName}: no matching base schema found (looked for " +
-                        $"{Path.GetRelativePath(modPath, sourcePath)})");
+                        $"{CompatHelpers.GetRelativePath(modPath, sourcePath)})");
                     continue;
                 }
 
@@ -120,7 +121,9 @@ public static class SchemaUpdater
 
         var bytesA = File.ReadAllBytes(pathA);
         var bytesB = File.ReadAllBytes(pathB);
-        return bytesA.AsSpan().SequenceEqual(bytesB);
+        // AsSpan()-based comparison needs System.Memory; a plain LINQ
+        // SequenceEqual (already using System.Linq here) avoids that dependency.
+        return bytesA.SequenceEqual(bytesB);
     }
 }
 

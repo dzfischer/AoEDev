@@ -78,8 +78,12 @@ public static class ModuleScanner
                     case "shortdesc": info.ShortDesc = FirstLine(text); break;
                     case "desc": info.Desc = text; break;
                     case "compatible":
+                        // .NET Framework has no Split(char, StringSplitOptions) overload or
+                        // TrimEntries option, so split on an array and trim manually.
                         info.Compatible = text
-                            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                            .Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                            .Select(s => s.Trim())
+                            .Where(s => s.Length > 0)
                             .ToList();
                         break;
                     // "name" is intentionally not used to override the folder name --
@@ -120,7 +124,9 @@ public static class ModuleScanner
     private static string FirstLine(string text)
     {
         var idx = text.IndexOf('\n');
-        var s = idx >= 0 ? text[..idx] : text;
+        // .NET Framework has no System.Range/System.Index types, so the C# 8
+        // range operator (text[..idx]) won't compile there -- use Substring instead.
+        var s = idx >= 0 ? text.Substring(0, idx) : text;
         return s.Trim();
     }
 
@@ -158,7 +164,7 @@ public static class ModuleScanner
                 if (file.EndsWith("Schema.xml", StringComparison.OrdinalIgnoreCase))
                     continue;
 
-                var rel = Path.GetRelativePath(moduleDir, file);
+                var rel = CompatHelpers.GetRelativePath(moduleDir, file);
                 var topSegment = rel.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)[0];
                 bool isArt = topSegment.Equals("Art", StringComparison.OrdinalIgnoreCase);
 
@@ -169,16 +175,21 @@ public static class ModuleScanner
                 }
                 else
                 {
+                    // SHA256.HashData(Stream/byte[]) is a .NET 5+ static convenience;
+                    // .NET Framework needs an instance via SHA256.Create().
+                    using var sha256 = SHA256.Create();
                     using var stream = File.OpenRead(file);
-                    var hash = SHA256.HashData(stream);
-                    entries.Add($"{rel}|{Convert.ToHexString(hash)}");
+                    var hash = sha256.ComputeHash(stream);
+                    entries.Add($"{rel}|{CompatHelpers.ToHexString(hash)}");
                 }
             }
 
             entries.Sort(StringComparer.Ordinal);
             var joined = string.Join("\n", entries);
-            var combined = SHA256.HashData(Encoding.UTF8.GetBytes(joined));
-            return Convert.ToHexString(combined)[..8];
+            byte[] combined;
+            using (var sha256 = SHA256.Create())
+                combined = sha256.ComputeHash(Encoding.UTF8.GetBytes(joined));
+            return CompatHelpers.ToHexString(combined).Substring(0, 8);
         }
         catch
         {

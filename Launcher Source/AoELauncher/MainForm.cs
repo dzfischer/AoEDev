@@ -431,36 +431,53 @@ public class MainForm : Form
 
         ShowScrollableMessage(m.Name, text.ToString());
     }
+
+    // NOTE: this is a verbatim string literal (@"..."), so every character between the quotes
+    // -- including line breaks and leading whitespace -- is taken literally as part of the
+    // text. That's why the lines below sit flush against the left margin rather than indented
+    // to match the surrounding code: any indentation here would show up as indentation in the
+    // dialog itself.
     private void ShowHelp()
     {
-        var msg = new StringBuilder();
-        msg.AppendLine("    GENERAL");
-        msg.AppendLine("- You can launch the game by the top center button; be aware it may take some time to activate");
-        msg.AppendLine("- Active modules are shown on the left panel, and inactive modules on the right panel");
-        msg.AppendLine();
-        msg.AppendLine("    USING MODULES");
-        msg.AppendLine("- Changing the status of a module simply makes this launcher move the game files for you; it can be done manually");
-        msg.AppendLine("- You can either doubleclick a module to move which side it is on, or click and drag it across");
-        msg.AppendLine("- Shift clicking a module with one already selected will select it and all modules between the two");
-        msg.AppendLine("- Control-clicking a module will toggle the selection of that specific module");
-        msg.AppendLine("- The Refresh button will update the shown module list if you manually move files with the launcher open");
-        msg.AppendLine(); 
-        msg.AppendLine("    PRESETS");
-        msg.AppendLine("- Pressing the \"Save...\" button will give you the option to save the current selection as a preset");
-        msg.AppendLine("- Pressing the Load Preset button will cause the currently selected preset in the dropdown box to be loaded");
-        msg.AppendLine("- Delete will prompt you whether to delete the currently selected preset");
-        msg.AppendLine(); 
-        msg.AppendLine("    EXPORTING AND IMPORTING");
-        msg.AppendLine("- Presets can be exported or imported, which is VERY USEFUL when you are reporting bugs on discord");
-        msg.AppendLine("- The Import Preset button will prompt you to paste a preset code, and then save and load it");
-        msg.AppendLine("- Export Preset will copy a code to your clipboard that you can use to send to others");
-        msg.AppendLine("- If the Futureproof box is checked, the copied code will not be checked upon import for matching module versions");
-        msg.AppendLine(); 
-        msg.AppendLine("    UPDATING SCHEMAS (For module makers)");
-        msg.AppendLine("- This button will attempt to *update*, not add, schema files for all modules. Please format your module correctly!");
+        var msg = @"    GENERAL
+- You can launch the game by the top center button; be aware it may take some time to activate
+- Active modules are shown on the left panel, and inactive modules on the right panel
 
-        ShowScrollableMessage("Usage Guide", msg.ToString());
+    USING MODULES
+- Changing the status of a module simply makes this launcher move the game files for you; it can be done manually
+- You can either doubleclick a module to move which side it is on, or click and drag it across
+- Shift clicking a module with one already selected will select it and all modules between the two
+- Control-clicking a module will toggle the selection of that specific module
+- The Refresh button will update the shown module list if you manually move files with the launcher open
+
+    PRESETS
+- Pressing the ""Save..."" button will give you the option to save the current selection as a preset
+- Pressing the Load Preset button will cause the currently selected preset in the dropdown box to be loaded
+- Delete will prompt you whether to delete the currently selected preset
+
+    EXPORTING AND IMPORTING
+- Presets can be exported or imported, which is VERY USEFUL when you are reporting bugs on discord
+- The Import Preset button will prompt you to paste a preset code, and then save and load it
+- Export Preset will copy a code to your clipboard that you can use to send to others
+- If the Futureproof box is checked, the copied code will not be checked upon import for matching module versions
+
+    UPDATING SCHEMAS (For module makers)
+- This button will attempt to *update*, not add, schema files for all modules. Please format your module correctly!";
+
+        ShowScrollableMessage("Usage Guide", msg);
     }
+
+    /// <summary>
+    /// Normalizes any mix of bare \n, bare \r, or \r\n line endings to Environment.NewLine.
+    /// ReadOnlySelectableTextBox wraps a RichTextBox (the usual way to get read-only,
+    /// *selectable* text, since a plain Label can't be selected) -- and RichTextBox silently
+    /// drops line breaks that are a bare \n with no \r. That's exactly what text coming from a
+    /// module's Desc field tends to be, since it's often authored/edited on a non-Windows
+    /// machine. Routing every string through here before it reaches the box, rather than
+    /// patching individual call sites, is what actually fixes that for good.
+    /// </summary>
+    private static string NormalizeNewlines(string text) =>
+        text.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", Environment.NewLine);
 
     /// <summary>Generic scrollable read-only message dialog, styled to match the app, with a single OK button.</summary>
     private void ShowScrollableMessage(string title, string text)
@@ -478,7 +495,7 @@ public class MainForm : Form
         {
             Dock = DockStyle.Fill,
             ScrollBars = ScrollBars.Vertical,
-            Text = text,
+            Text = NormalizeNewlines(text),
             BorderStyle = BorderStyle.None,
         };
         box.BackColor = Theme.Panel;
@@ -509,7 +526,7 @@ public class MainForm : Form
         {
             Dock = DockStyle.Fill,
             ScrollBars = ScrollBars.Vertical,
-            Text = text,
+            Text = NormalizeNewlines(text),
             BorderStyle = BorderStyle.None,
         };
         box.BackColor = Theme.Panel;

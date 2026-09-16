@@ -1,20 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <AssemblyName>AoELauncher</AssemblyName>
-    <RootNamespace>AoELauncher</RootNamespace>
-    <InvariantGlobalization>true</InvariantGlobalization>
-    <ApplicationIcon>AoE.ico</ApplicationIcon>
-    <SelfContained>true</SelfContained>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <PublishSingleFile>true</PublishSingleFile>
-    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-    <EnableCompressionInSingleFile>false</EnableCompressionInSingleFile>
-  </PropertyGroup>
-
+	<PropertyGroup>
+	<OutputType>WinExe</OutputType>
+	<TargetFramework>net48</TargetFramework>
+	<UseWindowsForms>true</UseWindowsForms>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<Nullable>enable</Nullable>
+	<LangVersion>10.0</LangVersion>
+	<AssemblyName>AoELauncher</AssemblyName>
+	<RootNamespace>AoELauncher</RootNamespace>
+	<ApplicationIcon>AoE.ico</ApplicationIcon>
+	<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+	</PropertyGroup>
 </Project>

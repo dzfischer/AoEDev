@@ -55,7 +55,9 @@ public static class PresetCodec
         }
 
         using var compressed = new MemoryStream();
-        using (var gz = new GZipStream(compressed, CompressionLevel.SmallestSize, leaveOpen: true))
+        // .NET Framework's CompressionLevel doesn't have SmallestSize (added in .NET 7);
+        // Optimal is its closest/best available equivalent there.
+        using (var gz = new GZipStream(compressed, CompressionLevel.Optimal, leaveOpen: true))
         {
             var bytes = raw.ToArray();
             gz.Write(bytes, 0, bytes.Length);
@@ -150,12 +152,13 @@ public static class PresetCodec
         if (string.IsNullOrEmpty(fingerprintHex))
             return new byte[4];
 
-        var hex = fingerprintHex.Length >= 8 ? fingerprintHex[..8] : fingerprintHex.PadRight(8, '0');
+        // No System.Range on .NET Framework -- fingerprintHex[..8] won't compile there.
+        var hex = fingerprintHex.Length >= 8 ? fingerprintHex.Substring(0, 8) : fingerprintHex.PadRight(8, '0');
         var bytes = new byte[4];
         for (int i = 0; i < 4; i++)
             bytes[i] = Convert.ToByte(hex.Substring(i * 2, 2), 16);
         return bytes;
     }
 
-    private static string BytesToFingerprint(byte[] bytes) => Convert.ToHexString(bytes);
+    private static string BytesToFingerprint(byte[] bytes) => CompatHelpers.ToHexString(bytes);
 }
