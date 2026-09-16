@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -204,9 +205,6 @@ public class MainForm : Form
         };
         Theme.StyleGrid(grid);
 
-        // Module is the only resizable/dynamic column (Fill -- grows and shrinks with the
-        // window). Version and Info are both fixed-width and explicitly non-resizable, so
-        // neither has a draggable divider or shows a resize cursor.
         var nameCol = new DataGridViewTextBoxColumn
         {
             Name = "Name", HeaderText = "Module",
@@ -224,8 +222,6 @@ public class MainForm : Form
         {
             Name = "Info",
             HeaderText = "Info",
-            Text = "i",
-            UseColumnTextForButtonValue = true,
             AutoSizeMode = DataGridViewAutoSizeColumnMode.None,
             Width = 32,
             Resizable = DataGridViewTriState.False,
@@ -397,7 +393,8 @@ public class MainForm : Form
         grid.Rows.Clear();
         foreach (var m in modules)
         {
-            var idx = grid.Rows.Add(m.Name, m.Version, "?");
+            var infoText = !string.IsNullOrWhiteSpace(m.Desc) ? "i" : "";
+            var idx = grid.Rows.Add(m.Name, m.Version, infoText);
             var row = grid.Rows[idx];
             row.Tag = m;
             if (!string.IsNullOrWhiteSpace(m.ShortDesc))
@@ -648,9 +645,42 @@ public class MainForm : Form
         {
             if (e.RowIndex < 0) return;
             if (grid.Columns[e.ColumnIndex].Name != "Info") return;
-            if (grid.Rows[e.RowIndex].Tag is ModuleInfo m)
+            if (grid.Rows[e.RowIndex].Tag is ModuleInfo m && !string.IsNullOrWhiteSpace(m.Desc))
                 ShowModuleDetails(m);
         };
+
+        var contextMenu = new ContextMenuStrip();
+        var openFolderItem = new ToolStripMenuItem("Open containing folder?");
+        contextMenu.Items.Add(openFolderItem);
+
+        // Row index captured by the most recent right-click, so the click handler below
+        // knows which row's folder to open regardless of the current selection.
+        var contextRowIndex = -1;
+
+        grid.MouseDown += (s, e) =>
+        {
+            // HitTest (rather than CellMouseDown) so this also correctly resets to -1 on a
+            // right-click below the last row, where CellMouseDown never fires at all.
+            contextRowIndex = e.Button == MouseButtons.Right ? grid.HitTest(e.X, e.Y).RowIndex : -1;
+        };
+
+        contextMenu.Opening += (s, e) =>
+        {
+            // Right-clicked empty space below the rows, or a header -- nothing to open.
+            if (contextRowIndex < 0 || contextRowIndex >= grid.Rows.Count)
+                e.Cancel = true;
+        };
+
+        openFolderItem.Click += (s, e) =>
+        {
+            if (contextRowIndex >= 0 && contextRowIndex < grid.Rows.Count &&
+                grid.Rows[contextRowIndex].Tag is ModuleInfo m)
+            {
+                OpenModuleFolder(m.FullPath);
+            }
+        };
+
+        grid.ContextMenuStrip = contextMenu;
 
         grid.CellDoubleClick += (s, e) =>
         {
@@ -658,6 +688,27 @@ public class MainForm : Form
             if (grid.Rows[e.RowIndex].Tag is ModuleInfo m)
                 MoveModules(new List<string> { m.FullPath }, toActive: !isActiveList);
         };
+    }
+
+    private void OpenModuleFolder(string path)
+    {
+        try
+        {
+            if (!Directory.Exists(path))
+            {
+                MessageBox.Show(this,
+                    "This module's folder couldn't be found. It may have been moved, renamed, or deleted.",
+                    "Folder Not Found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            Process.Start(new ProcessStartInfo("explorer.exe", $"\"{path}\"") { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, $"Couldn't open that folder:\n{ex.Message}", "Error",
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
     }
 
     private void MoveModules(List<string> sourcePaths, bool toActive)

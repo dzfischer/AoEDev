@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Reflection;
 using System.Windows.Forms;
 
 namespace AoELauncher.UI;
@@ -36,6 +37,42 @@ public class ModuleGridView : DataGridView
 
     /// <summary>Raised once the mouse has moved far enough (from a valid row, held button) to start a drag-drop gesture.</summary>
     public event EventHandler? DragThresholdReached;
+
+    protected override void OnHandleCreated(EventArgs e)
+    {
+        base.OnHandleCreated(e);
+        MakeCellToolTipsInstant();
+    }
+
+    /// <summary>
+    /// DataGridView's cell tooltips (ShowCellToolTips) use a private internal ToolTip
+    /// instance with no public property to control its delay, so this reaches in via
+    /// reflection and zeroes it out. This pokes at private framework field names
+    /// ("toolTipControl" on DataGridView, "toolTip" on its internal DataGridViewToolTip
+    /// wrapper), which aren't a guaranteed contract -- if a future .NET version renames or
+    /// removes them, this just quietly no-ops and tooltips fall back to their normal delay.
+    /// </summary>
+    private void MakeCellToolTipsInstant()
+    {
+        try
+        {
+            var toolTipControlField = typeof(DataGridView).GetField("toolTipControl", BindingFlags.NonPublic | BindingFlags.Instance);
+            var toolTipControl = toolTipControlField?.GetValue(this);
+            if (toolTipControl == null) return;
+
+            var toolTipField = toolTipControl.GetType().GetField("toolTip", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (toolTipField?.GetValue(toolTipControl) is ToolTip toolTip)
+            {
+                toolTip.InitialDelay = 0;
+                toolTip.ReshowDelay = 0;
+                toolTip.AutomaticDelay = 0;
+            }
+        }
+        catch
+        {
+            // Best-effort only -- see remarks above.
+        }
+    }
 
     protected override void OnMouseDown(MouseEventArgs e)
     {
