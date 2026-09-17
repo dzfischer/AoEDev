@@ -29,7 +29,7 @@ public static class GameLauncher
         var psi = new ProcessStartInfo
         {
             FileName = btsExePath,
-            Arguments = $"mod=\"\\Mods\\{modFolderName}\"",
+            Arguments = $"mod=\"\\{modFolderName}\"",
             WorkingDirectory = Path.GetDirectoryName(btsExePath) ?? "",
             UseShellExecute = false,
         };
